@@ -7,7 +7,7 @@
 			</div>
 		</header>
 		<!-- 头部标题框 -->
-		
+
 
         <div class="content main_position">
 			<div class="path_now">
@@ -25,9 +25,9 @@
 							 <el-radio v-model="radio" label="2">按科目查询</el-radio>
 						</el-radio-group>
 					</div>
-					
+
 					<div class="search_box" v-show="radioStatic == 1">
-						<span class="search_test">院&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;校&nbsp;&nbsp;:</span>
+						<span class="search_test">院&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;校:</span>
 						   <el-select v-model="school" clearable placeholder="按院校查专业或科目" filterable @change="schoolSelect">
 						     <el-option
 						       v-for="item in schoolList"
@@ -37,9 +37,9 @@
 						     </el-option>
 						   </el-select>
 					</div>
-					
+
 					<div class="search_box" v-show="radioStatic == 1">
-						<span class="search_test">专业&nbsp;(&nbsp;类&nbsp;)&nbsp;&nbsp;:</span>
+						<span class="search_test">专&nbsp;&nbsp;业&nbsp;&nbsp;(类)&nbsp;:</span>
 						   <el-select v-model="profession" clearable placeholder="按专业查院校或科目" filterable @change="majorSelect">
 						     <el-option
 						       v-for="item in majorList"
@@ -49,7 +49,7 @@
 						     </el-option>
 						   </el-select>
 					</div>
-					
+
 					<div class="search_box" v-show="radioStatic == 2">
 						<span class="search_test">首&nbsp;选&nbsp;科&nbsp;目&nbsp;:</span>
 						   <el-select v-model="firstSubject" clearable placeholder="物理或历史均可" filterable>
@@ -61,7 +61,7 @@
 						     </el-option>
 						   </el-select>
 					</div>
-					
+
 					<div class="search_box" v-show="radioStatic == 2">
 						<span class="search_test">再&nbsp;选&nbsp;科&nbsp;目&nbsp;:</span>
 						   <el-select v-model="secondSubject" clearable placeholder="不提再选科目要求" filterable>
@@ -73,7 +73,7 @@
 						     </el-option>
 						   </el-select>
 					</div>
-					
+
 					<el-button type="warning" class="search_btn" @click="seek()">立即查询</el-button>
 					<p class="tips_test" v-show="radioStatic == 1">*&nbsp;院校或专业&nbsp;（&nbsp;类&nbsp;）任选其一即可直接查询</p>
 					<p class="tips_test">*&nbsp;选课走班指南仅供参考，请根据实际情况进行选课</p>
@@ -87,7 +87,7 @@
 				“考生选考其中1门即可报考”（2科）和“不提再选科目要求”。招生专业选考科目要求提供2018年进入高中一年级学生选科参考，
 				学生可根据自身兴趣爱好及特长，结合拟报考高校及专业的选考科目要求，合理确定选考科目。
 			</div>
-			
+
 			<div class="search-result">
 				<div>
 					<div style="font-size:14px;margin-bottom:20px;line-height:2em;">
@@ -100,7 +100,7 @@
 				</div>
 				<p v-show="!successQequest && radioStatic == 1">请在上方输入院校或专业（类）进行查询</p>
 				<p v-show="!successQequest && radioStatic == 2">请在上方输入首选科目、再选科目进行查询</p>
-				
+
 				<!-- 查询结果表格 -->
 				  <el-table
 					 v-show="successQequest"
@@ -112,29 +112,29 @@
 					  prop="school"
 					  label="院校">
 					</el-table-column>
-					
+
 					<el-table-column
 					  prop="profession"
 					  label="招生专业(类)">
 					</el-table-column>
-					
+
 					<el-table-column
 					  prop="professionSub"
 					  label="包含专业"
 					  width="350">
 					</el-table-column>
-					
+
 					<el-table-column
 					  prop="subject1"
 					  label="首选科目要求">
 					</el-table-column>
-					
+
 					<el-table-column
 					  prop="subject2"
 					  label="再选科目要求">
 					</el-table-column>
 				  </el-table>
-				  
+
 					<div class="block" v-show="successQequest">
 						<el-pagination
 							@size-change = "countSizeChange"
@@ -145,21 +145,21 @@
 							:page-size="count"
 							layout="total, sizes, prev, pager, next, jumper"
 							:total="dataNum"
-							style="display:inline-block;">							
+							style="display:inline-block;">
 						</el-pagination>
 					</div>
 			</div>
-			
+
 			<div class="qrcode">
 				<img src="@/assets/qrcode.png" alt="">
 				<p>手机扫码获取选课走班指南</p>
 			</div>
 		</div>
-		
-		
+
+
 		<footer>
 			<div class="content">
-				............... 
+				...............
 			</div>
 		</footer>
 		<!-- 底部框 -->
@@ -177,10 +177,10 @@ import util from "@/utils/util.js";
 		schoolListCopy: [],  //院校列表备份
 		majorList: [], //专业列表
 		majorListCopy: [], //专业列表备份
-		
+
 		firstSubjectList: [],  //首选科目
 		secondSubjectList: [], //再选科目
-				
+
 		radioStatic: 1, //单选框状态
 		school: '',  //院校输入框的值
 		profession: '',  //专业输入框的值
@@ -223,10 +223,16 @@ import util from "@/utils/util.js";
 				page: this.currentPage,
 				count: this.count
 			};
-			if(!util.isEmpty(this.school)) postData.school = this.school;
-			if(!util.isEmpty(this.profession)) postData.profession =  this.profession;
-			if(!util.isEmpty(this.firstSubject)) postData.subject1 = this.firstSubject;
-			if(!util.isEmpty(this.secondSubject)) postData.subject2 =  this.secondSubject;
+			if (this.radioStatic == 1)
+			{
+				if(!util.isEmpty(this.school)) postData.school = this.school;
+				if(!util.isEmpty(this.profession)) postData.profession =  this.profession;
+			}
+			if (this.radioStatic == 2)
+			{
+				if(!util.isEmpty(this.firstSubject)) postData.subject1 = this.firstSubject;
+				if(!util.isEmpty(this.secondSubject)) postData.subject2 =  this.secondSubject;
+			}
 			api.getSubject(postData, (res)=>{
 				let data = api.getData(res);
 				this.tableData = data;
@@ -254,7 +260,7 @@ import util from "@/utils/util.js";
 		//获取院校列表
 		getSchoolList(){
 			let postData = {
-				page: 1, 
+				page: 1,
 				count: 9999
 			};
 			if(!util.isEmpty(this.school)) postData.school = this.school;
@@ -268,7 +274,7 @@ import util from "@/utils/util.js";
 		//获取专业列表
 		getMajorList(){
 			let postData = {
-				page: 1, 
+				page: 1,
 				count: 9999
 			};
 			if(!util.isEmpty(this.school)) postData.school = this.school;
@@ -282,7 +288,7 @@ import util from "@/utils/util.js";
 		//获取首选科目列表
 		getfirstSubjectList(){
 			let postData = {
-				page: 1, 
+				page: 1,
 				count: 9999
 			};
 			api.getSubject1(postData, (res)=>{
@@ -296,7 +302,7 @@ import util from "@/utils/util.js";
 		//获取再选科目列表
 		getSecondSubjectList(){
 			let postData = {
-				page: 1, 
+				page: 1,
 				count: 9999
 			};
 			api.getSubject2(postData, (res)=>{
