@@ -27,7 +27,7 @@
 					</div>
 
 					<div class="search_box" v-show="radioStatic == 1">
-						<span class="search_test">院&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;校:</span>
+						<span class="search_test">院&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;校&nbsp;:</span>
 						   <el-select v-model="school" clearable placeholder="按院校查专业或科目" filterable @change="schoolSelect">
 						     <el-option
 						       v-for="item in schoolList"
@@ -51,7 +51,7 @@
 					</div>
 
 					<div class="search_box" v-show="radioStatic == 2">
-						<span class="search_test">首&nbsp;选&nbsp;科&nbsp;目&nbsp;:</span>
+						<span class="search_test">首&nbsp;选&nbsp;科&nbsp;目&#8197;:</span>
 						   <el-select v-model="firstSubject" clearable placeholder="物理或历史均可" filterable>
 						     <el-option
 						       v-for="item in firstSubjectList"
@@ -63,7 +63,7 @@
 					</div>
 
 					<div class="search_box" v-show="radioStatic == 2">
-						<span class="search_test">再&nbsp;选&nbsp;科&nbsp;目&nbsp;:</span>
+						<span class="search_test">再&nbsp;选&nbsp;科&nbsp;目&#8197;:</span>
 						   <el-select v-model="secondSubject" clearable placeholder="不提再选科目要求" filterable>
 						     <el-option
 						       v-for="item in secondSubjectList"
@@ -93,13 +93,19 @@
 					<div style="font-size:14px;margin-bottom:20px;line-height:2em;">
 						<p>
 							<span>当前查询条件为&nbsp;&nbsp;&nbsp;</span>
-							<span v-show="radioStatic == 1">未选择院校或专业&nbsp;(&nbsp;类&nbsp;)</span>
-							<span v-show="radioStatic == 2">未选择首选科目、再选科目</span>
+							<span v-show="!successQequest && radioStatic == 1">未选择院校或专业&nbsp;(&nbsp;类&nbsp;)</span>
+							<span v-show="!successQequest && radioStatic == 2">未选择首选科目、再选科目</span>
+							
+							<span v-show="successQequest && radioStatic == 1">院校：{{school == '' ? "全部" : school}}; 
+							专业(类)：{{profession == '' ? "全部" : profession}}</span>
+							
+							<span v-show="successQequest && radioStatic == 2">首选科目：{{firstSubject == '' ? "不提首选科目要求" : firstSubject}}; 
+							再选科目：{{secondSubject == '' ? "不提再选科目要求" : secondSubject}}</span>
 						</p>
 					</div>
 				</div>
 				<p v-show="!successQequest && radioStatic == 1">请在上方输入院校或专业（类）进行查询</p>
-				<p v-show="!successQequest && radioStatic == 2">请在上方输入首选科目、再选科目进行查询</p>
+				<p v-show="!successQequest && radioStatic == 2">请在上方输入首选科目、再选科目进行查询</p>				
 
 				<!-- 查询结果表格 -->
 				  <el-table
@@ -148,11 +154,6 @@
 							style="display:inline-block;">
 						</el-pagination>
 					</div>
-			</div>
-
-			<div class="qrcode">
-				<img src="@/assets/qrcode.png" alt="">
-				<p>手机扫码获取选课走班指南</p>
 			</div>
 		</div>
 
@@ -427,25 +428,6 @@ footer{
 	margin-bottom: 35px;
 	box-sizing: border-box;
 	font-size:14px;
-}
-.qrcode{
-	position: absolute;
-	left: 1030px;
-	top: 327px;
-	width: 130px;
-	padding: 20px;
-	background-color: rgba(0,0,0,0.1);
-	color: #fff;
-	font-size: 14px;
-	text-align: center;
-	border-radius: 4px;
-}
-.qrcode>img{
-	width:90px;
-	height:90px;
-}
-.qrcode>p{
-	padding:5px 17px 0;
 }
 .block{
 	display:flex;

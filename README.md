@@ -1,4 +1,4 @@
-# myvue
+# school_web
 
 ## Project setup
 ```
