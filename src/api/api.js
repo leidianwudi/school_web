@@ -25,5 +25,11 @@ const api = {
 	
 	//查询可选的专业课程
 	getSubject: function(postData, funSuccess) {httpUtil.post('subject/getSubject', postData, funSuccess);},
+	
+	//按学校或专业统计百分比
+	getSubjectPer: function(postData, funSuccess) {httpUtil.post('subject/getSubjectPer', postData, funSuccess);},
+	
+	//按首选和再选统计百分比
+	getProfessionPer: function(postData, funSuccess) {httpUtil.post('subject/getProfessionPer', postData, funSuccess);},
 }
 export default api;

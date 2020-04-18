@@ -4,6 +4,7 @@ import router from "./router";
 import store from "./store";
 import ElementUI from "element-ui";
 import "element-ui/lib/theme-chalk/index.css";
+import echarts from 'echarts';
 // import axios from "axios";
 // import { post, fetch, patch, put } from "./utils/http";
 
@@ -15,6 +16,7 @@ import "element-ui/lib/theme-chalk/index.css";
 // Vue.prototype.$put=put;
 
 Vue.config.productionTip = false;
+Vue.prototype.$echarts = echarts;
 Vue.use(ElementUI);
 new Vue({
   router,

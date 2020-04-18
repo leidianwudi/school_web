@@ -51,7 +51,7 @@
 					</div>
 
 					<div class="search_box" v-show="radioStatic == 2">
-						<span class="search_test">首&nbsp;选&nbsp;科&nbsp;目&#8197;:</span>
+						<span class="search_test">首&nbsp;选&nbsp;科&nbsp;目&nbsp;:</span>
 						   <el-select v-model="firstSubject" clearable placeholder="物理或历史均可" filterable>
 						     <el-option
 						       v-for="item in firstSubjectList"
@@ -74,7 +74,10 @@
 						   </el-select>
 					</div>
 
-					<el-button type="warning" class="search_btn" @click="seek()">立即查询</el-button>
+					<div style="display: flex;">
+						<el-button type="warning" class="search_btn" @click="seek()">立即查询</el-button>
+						<el-button type="warning" class="search_btn" @click="seekPercentage()">百分比查询</el-button>
+					</div>
 					<p class="tips_test" v-show="radioStatic == 1">*&nbsp;院校或专业&nbsp;（&nbsp;类&nbsp;）任选其一即可直接查询</p>
 					<p class="tips_test">*&nbsp;选课走班指南仅供参考，请根据实际情况进行选课</p>
 				</div>
@@ -109,7 +112,7 @@
 
 				<!-- 查询结果表格 -->
 				  <el-table
-					 v-show="successQequest"
+					 v-show="successQequest == 1"
 					:data="tableData"
 					stripe
 					border
@@ -141,7 +144,7 @@
 					</el-table-column>
 				  </el-table>
 
-					<div class="block" v-show="successQequest">
+					<div class="block" v-show="successQequest == 1">
 						<el-pagination
 							@size-change = "countSizeChange"
 							@current-change= "pageChange"
@@ -154,6 +157,7 @@
 							style="display:inline-block;">
 						</el-pagination>
 					</div>
+				<div id="echartsId" style="width:970px;height:400px;" v-show="successQequest == 2"></div>
 			</div>
 		</div>
 
@@ -187,7 +191,7 @@ import util from "@/utils/util.js";
 		profession: '',  //专业输入框的值
 		firstSubject: '',  //首选科目输入框的值
 		secondSubject: '', //再选科目输入框的值
-		successQequest: false, //控制搜索结果表格显示
+		successQequest: false, //控制搜索结果显示
 		tableData: [],  //搜索结果
 		currentPage: 1,  //当前页数
 		dataNum: null, //表格数据总数
@@ -218,6 +222,130 @@ import util from "@/utils/util.js";
 			};
 			this.currentPage = e;
 		},
+		//百分比查询
+		seekPercentage(){
+			if(this.radioStatic == 1 && this.school == '' && this.profession == ''){
+				this.$message.error('院校或专业必须输入至少一项');
+				return;
+			}else if(this.radioStatic == 2 && this.firstSubject == '' && this.secondSubject == ''){
+				this.$message.error('首选科目和再选科目必须输入至少一项');
+				return;
+			};
+			let postData = {
+				page: this.currentPage,
+				count: this.count
+			};
+			if (this.radioStatic == 1)
+			{
+				if(!util.isEmpty(this.school)) postData.school = this.school;
+				if(!util.isEmpty(this.profession)) postData.profession =  this.profession;
+				this.getSubjectPer(postData);
+			}
+			if (this.radioStatic == 2)
+			{
+				if(!util.isEmpty(this.firstSubject)) postData.subject1 = this.firstSubject;
+				if(!util.isEmpty(this.secondSubject)) postData.subject2 =  this.secondSubject;
+				this.getProfessionPer(postData);
+			}
+		},
+		//制作柱状图
+		getChat(sum, per, name, name1){
+			let myChart = this.$echarts.init(document.getElementById('echartsId'));
+			let option = {
+					color: ['#3398DB'],
+					tooltip: {
+						trigger: 'axis',
+						axisPointer: {            // 坐标轴指示器，坐标轴触发有效
+							type: 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+						},
+						show: true
+					},
+					grid: {
+						left: '3%',
+						right: '4%',
+						bottom: '3%',
+						containLabel: true
+					},
+					xAxis: [
+						{
+							type: 'category',
+							data: name,
+							axisTick: {
+								alignWithLabel: true
+							},
+							axisLabel:{  
+								interval:0,//横轴信息全部显示  
+								                clickable:true,//并给图表添加单击事件  根据返回值判断点击的是哪里
+								                formatter : function(params,index){
+								                    if (index % 2 != 0) {
+								                        return '\n\n' + params;
+								                    }
+								                    else {
+								                        return params;
+								                    }
+								                }
+							},
+						}
+					],
+					yAxis: [
+						{
+							type: 'value'
+						}
+					],
+					series: [
+						{
+							type: 'bar',
+							barWidth: '60%',
+							data: sum,
+							name: '专业类条数'
+						},
+						{
+							type: 'bar',
+							barWidth: '0',
+							barHeight: '0',
+							data: per,
+							name: '专业类占总专业类百分比',
+							show: false
+						}
+					]
+			};
+			myChart.setOption(option);
+		},
+		//按学校或专业统计百分比
+		getSubjectPer(data){
+			let getSubject = [];  //存放首选科目和再选科目组装文字
+			let getSum = [];   //存放符合条件专业数
+			let getPer = [];  //存放所占总专业百分比
+			api.getSubjectPer(data, (res)=>{
+				let data = api.getData(res).slice(0, 10);  //获取前十条数据
+				data.forEach((item, index) => {
+					let sub = item.subject1 + "(" + item.subject2 + ")";  //组装科目名称
+					getSubject.push(sub);   //添加科目
+					getSum.push(item.sum);   //添加专业类条数
+					getPer.push(parseFloat(item.per));  //添加所占总专业百分比
+				});
+				this.getChat(getSum, getPer, getSubject);
+				this.successQequest = 2;
+			});
+		},
+		//按首选和再选统计百分比
+		getProfessionPer(data){
+			let getName = [];  //存放专业名
+			let getSum = [];   //存放专业类条数
+			let getPer = [];  //存放专业类占总专业类百分比
+			api.getProfessionPer(data, (res)=>{
+				let data = api.getData(res).slice(0, 10);  //获取前十条数据
+				data.forEach((item, index) => {
+					getName.push(item.pro);   //添加专业名
+					getSum.push(item.sum);   //添加专业类条数
+					let num = (parseInt(item.sum) * 100 ) / parseInt(item.sumAll);  //计算专业类占总专业类百分比
+					num = num.toFixed(2);  //保留二位小数(数据类型会被改变为string类型)
+					getPer.push(parseFloat(num));  //数据类型转为number类型并添加
+				});
+				this.getChat(getSum, getPer, getName);
+				this.successQequest = 2;
+			});
+		},
 		//查询可选的专业课程函数封装
 		getSubject(){
 			let postData = {
@@ -239,7 +367,7 @@ import util from "@/utils/util.js";
 				this.tableData = data;
 				this.dataNum = res.data.total;
 			});
-			this.successQequest = true;
+			this.successQequest = 1;
 		},
 		//每页数据条数改变
 		countSizeChange(e){
@@ -320,7 +448,7 @@ import util from "@/utils/util.js";
 		this.getMajorList();	//获取专业列表
 		this.getfirstSubjectList();  //获取首选科目列表
 		this.getSecondSubjectList();  //获取再选科目列表
-	}
+	},
   }
 </script>
 
