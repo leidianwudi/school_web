@@ -111,40 +111,40 @@
 				<p v-show="!successQequest && radioStatic == 2">请在上方输入首选科目、再选科目进行查询</p>				
 
 				<!-- 查询结果表格 -->
-				  <el-table
-					 v-show="successQequest == 1"
+				<div v-show="successQequest == 1">
+					<el-table
 					:data="tableData"
 					stripe
 					border
 					style="width: 100%">
-					<el-table-column
-					  prop="school"
-					  label="院校">
-					</el-table-column>
-
-					<el-table-column
-					  prop="profession"
-					  label="招生专业(类)">
-					</el-table-column>
-
-					<el-table-column
-					  prop="professionSub"
-					  label="包含专业"
-					  width="350">
-					</el-table-column>
-
-					<el-table-column
-					  prop="subject1"
-					  label="首选科目要求">
-					</el-table-column>
-
-					<el-table-column
-					  prop="subject2"
-					  label="再选科目要求">
-					</el-table-column>
-				  </el-table>
-
-					<div class="block" v-show="successQequest == 1">
+						<el-table-column
+						  prop="school"
+						  label="院校">
+						</el-table-column>
+					
+						<el-table-column
+						  prop="profession"
+						  label="招生专业(类)">
+						</el-table-column>
+					
+						<el-table-column
+						  prop="professionSub"
+						  label="包含专业"
+						  width="350">
+						</el-table-column>
+					
+						<el-table-column
+						  prop="subject1"
+						  label="首选科目要求">
+						</el-table-column>
+					
+						<el-table-column
+						  prop="subject2"
+						  label="再选科目要求">
+						</el-table-column>
+					</el-table>
+					
+					<div class="block">
 						<el-pagination
 							@size-change = "countSizeChange"
 							@current-change= "pageChange"
@@ -157,7 +157,53 @@
 							style="display:inline-block;">
 						</el-pagination>
 					</div>
-				<div id="echartsId" style="width:970px;height:400px;" v-show="successQequest == 2"></div>
+				</div>
+				
+				<!-- 百分比查询结果 -->
+				<div v-show="successQequest == 2">
+					<div id="echartsId" style="width:970px;height:400px;"></div>
+					
+					<el-table
+					:data="perData"
+					stripe
+					border
+					style="width: 100%;margin-top: 40px;">
+						<el-table-column
+						  :prop="radioStatic == 1 ? 'subject1' : 'pro'"
+						  :label="radioStatic == 1 ? '首选科目' : '专业'">
+						</el-table-column>
+					
+						<el-table-column
+						  :prop="radioStatic == 1 ? 'subject2' : 'sum'"
+						  :label="radioStatic == 1 ? '再选科目' : '专业类条数'">
+						</el-table-column>
+					
+						<el-table-column
+						  :prop="radioStatic == 1 ? 'sum' : 'sumAll'"
+						  :label="radioStatic == 1 ? '符合条件专业数' : '该专业类总条数'">
+						</el-table-column>
+					
+						<el-table-column
+						  prop="per"
+						  :label="radioStatic == 1 ? '所占总专业百分比(保留4位小数)' : '专业类占总专业类百分比(保留2位小数)'">
+						</el-table-column>
+					</el-table>
+					
+					<div class="block">
+						<el-pagination
+							@size-change = "perCountSizeChange"
+							@current-change= "perPageChange"
+							:page-count = "perDataNum"
+							:current-page="perCurrentPage"
+							:page-sizes="[10, 30, 50, 100, 200]"
+							:page-size="perCount"
+							layout="total, sizes, prev, pager, next, jumper"
+							:total="perDataNum"
+							style="display:inline-block;">
+						</el-pagination>
+					</div>
+				</div>
+				
 			</div>
 		</div>
 
@@ -192,10 +238,16 @@ import util from "@/utils/util.js";
 		firstSubject: '',  //首选科目输入框的值
 		secondSubject: '', //再选科目输入框的值
 		successQequest: false, //控制搜索结果显示
-		tableData: [],  //搜索结果
+		
+		tableData: [],  //普通搜索结果
 		currentPage: 1,  //当前页数
 		dataNum: null, //表格数据总数
 		count: 30,  //每页数据条数
+		
+		perData: [],  //百分比搜索结果
+		perCurrentPage: 1,  //当前页数
+		perDataNum: null, //表格数据总数
+		perCount: 30,  //每页数据条数
       };
     },
 	methods:{
@@ -222,6 +274,18 @@ import util from "@/utils/util.js";
 			};
 			this.currentPage = e;
 		},
+		//操作百分比查询分页
+		perPageChange(e){
+			if(e > this.perCurrentPage){
+				++this.perCurrentPage;
+				this.seekPercentage();
+			};
+			if(e < this.perCurrentPage){
+				--this.perCurrentPage;
+				this.seekPercentage();
+			};
+			this.perCurrentPage = e;
+		},
 		//百分比查询
 		seekPercentage(){
 			if(this.radioStatic == 1 && this.school == '' && this.profession == ''){
@@ -232,8 +296,8 @@ import util from "@/utils/util.js";
 				return;
 			};
 			let postData = {
-				page: this.currentPage,
-				count: this.count
+				page: this.perCurrentPage,
+				count: this.perCount
 			};
 			if (this.radioStatic == 1)
 			{
@@ -317,6 +381,8 @@ import util from "@/utils/util.js";
 			let getSum = [];   //存放符合条件专业数
 			let getPer = [];  //存放所占总专业百分比
 			api.getSubjectPer(data, (res)=>{
+				this.perData = api.getData(res);
+				this.perDataNum = res.data.total;
 				let data = api.getData(res).slice(0, 10);  //获取前十条数据
 				data.forEach((item, index) => {
 					let sub = item.subject1 + "(" + item.subject2 + ")";  //组装科目名称
@@ -333,15 +399,33 @@ import util from "@/utils/util.js";
 			let getName = [];  //存放专业名
 			let getSum = [];   //存放专业类条数
 			let getPer = [];  //存放专业类占总专业类百分比
+			let newPer = [];  //存放组装数据
 			api.getProfessionPer(data, (res)=>{
-				let data = api.getData(res).slice(0, 10);  //获取前十条数据
-				data.forEach((item, index) => {
+				let data = api.getData(res);  
+				let dataCopy = data.slice(0, 10) //获取前十条数据
+				//处理前十条数据(柱状图用)
+				dataCopy.forEach((item, index) => {
 					getName.push(item.pro);   //添加专业名
 					getSum.push(item.sum);   //添加专业类条数
 					let num = (parseInt(item.sum) * 100 ) / parseInt(item.sumAll);  //计算专业类占总专业类百分比
 					num = num.toFixed(2);  //保留二位小数(数据类型会被改变为string类型)
 					getPer.push(parseFloat(num));  //数据类型转为number类型并添加
 				});
+				
+				//处理全部数据(表格用)
+				data.forEach((item, index) =>{
+					let num = (parseInt(item.sum) * 100 ) / parseInt(item.sumAll);  //计算专业类占总专业类百分比
+					num = num.toFixed(2);  //保留二位小数(数据类型会被改变为string类型)
+					let newObj = {};
+					newObj.pro = item.pro;
+					newObj.sum = item.sum;
+					newObj.sumAll = item.sumAll;
+					newObj.per = parseFloat(num);
+					newPer.push(newObj);
+				});
+				
+				this.perData = newPer;
+				this.perDataNum = res.data.total;
 				this.getChat(getSum, getPer, getName);
 				this.successQequest = 2;
 			});
@@ -373,6 +457,11 @@ import util from "@/utils/util.js";
 		countSizeChange(e){
 			this.count = e;
 			this.getSubject();
+		},
+		//百分比每页数据条数改变
+		perCountSizeChange(e){
+			this.perCount = e;
+			this.seekPercentage();
 		},
 		//单选框点击
 		radioChange(v){
