@@ -20,7 +20,7 @@ const api = {
 	//查询学校
 	getSchool: function(postData, funSuccess) {httpUtil.post('school/getSchool', postData, funSuccess);},
 
-	//查询学类
+	//查询门科
 	getMenke: function(postData, funSuccess) {httpUtil.post('school/getMenke', postData, funSuccess);},
 
 	//查询首选科目
