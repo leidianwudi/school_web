@@ -17,7 +17,7 @@
 				</el-breadcrumb>
 			</div>
 			<div class="main">
-				<div class="search">
+				<div class="search" style="padding-top: 30px;">
 					<div class="search_box">
 						<span class="search_test">查&nbsp;询&nbsp;方&nbsp;式&nbsp;:</span>
 						<el-radio-group v-model="radio" @change="radioChange">
@@ -36,6 +36,18 @@
 						       :value="item.school">
 						     </el-option>
 						   </el-select>
+					</div>
+
+					<div class="search_box" v-show="radioStatic == 1">
+						<span class="search_test">学&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;类&nbsp;:</span>
+						<el-select v-model="menke" clearable placeholder="按院校查专业或科目" filterable>
+							<el-option
+									v-for="item in menkeList"
+									:key="item.menke"
+									:label="item.menke"
+									:value="item.menke">
+							</el-option>
+						</el-select>
 					</div>
 
 					<div class="search_box" v-show="radioStatic == 1">
@@ -120,6 +132,11 @@
 						<el-table-column
 						  prop="school"
 						  label="院校">
+						</el-table-column>
+
+						<el-table-column
+							prop="menke"
+							label="学类">
 						</el-table-column>
 
 						<el-table-column
@@ -226,6 +243,8 @@ import util from "@/utils/util.js";
         radio: '1',  //单选框
 		schoolList: [],  //院校列表
 		schoolListCopy: [],  //院校列表备份
+		  menkeList:[],	//学类列表
+		  menkeListCopy:[],	//学类列表备份
 		majorList: [], //专业列表
 		majorListCopy: [], //专业列表备份
 
@@ -234,6 +253,7 @@ import util from "@/utils/util.js";
 
 		radioStatic: 1, //单选框状态
 		school: '',  //院校输入框的值
+		  menke: '',//学类输入框的值
 		profession: '',  //专业输入框的值
 		firstSubject: '',  //首选科目输入框的值
 		secondSubject: '', //再选科目输入框的值
@@ -253,8 +273,8 @@ import util from "@/utils/util.js";
 	methods:{
 		//搜索按钮
 		seek(){
-			if(this.radioStatic == 1 && this.school == '' && this.profession == ''){
-				this.$message.error('院校或专业必须输入至少一项');
+			if(this.radioStatic == 1 && this.school == '' && this.profession == '' && this.menke == ''){
+				this.$message.error('院校、学类或专业必须输入至少一项');
 				return;
 			}else if(this.radioStatic == 2 && this.firstSubject == '' && this.secondSubject == ''){
 				this.$message.error('首选科目和再选科目必须输入至少一项');
@@ -288,8 +308,8 @@ import util from "@/utils/util.js";
 		},
 		//百分比查询
 		seekPercentage(){
-			if(this.radioStatic == 1 && this.school == '' && this.profession == ''){
-				this.$message.error('院校或专业必须输入至少一项');
+			if(this.radioStatic == 1 && this.school == '' && this.profession == '' && this.menke == ''){
+				this.$message.error('院校、学类或专业必须输入至少一项');
 				return;
 			}else if(this.radioStatic == 2 && this.firstSubject == '' && this.secondSubject == ''){
 				this.$message.error('首选科目和再选科目必须输入至少一项');
@@ -303,6 +323,7 @@ import util from "@/utils/util.js";
 			{
 				if(!util.isEmpty(this.school)) postData.school = this.school;
 				if(!util.isEmpty(this.profession)) postData.profession =  this.profession;
+				if(!util.isEmpty(this.menke)) postData.menke =  this.menke;
 				this.getSubjectPer(postData);
 			}
 			if (this.radioStatic == 2)
@@ -440,6 +461,7 @@ import util from "@/utils/util.js";
 			{
 				if(!util.isEmpty(this.school)) postData.school = this.school;
 				if(!util.isEmpty(this.profession)) postData.profession =  this.profession;
+				if(!util.isEmpty(this.menke)) postData.menke =  this.menke;
 			}
 			if (this.radioStatic == 2)
 			{
@@ -489,6 +511,21 @@ import util from "@/utils/util.js";
 				this.schoolListCopy = data;
 			});
 		},
+		//获取学类列表
+		getMenkeList(){
+			let postData = {
+				page: 1,
+				count: 9999
+			};
+			if(!util.isEmpty(this.school)) postData.school = this.school;
+			if(!util.isEmpty(this.menke)) postData.menke = this.menke;
+			if(!util.isEmpty(this.profession)) postData.profession =  this.profession;
+			api.getMenke(postData, (res)=>{
+				let data = api.getData(res);
+				this.menkeList = data;
+				this.menkeListCopy = data;
+			});
+		},
 		//获取专业列表
 		getMajorList(){
 			let postData = {
@@ -534,6 +571,7 @@ import util from "@/utils/util.js";
 	},
 	created() {
 		this.getSchoolList();   //获取院校列表
+		this.getMenkeList();	//获取学类列表
 		this.getMajorList();	//获取专业列表
 		this.getfirstSubjectList();  //获取首选科目列表
 		this.getSecondSubjectList();  //获取再选科目列表
